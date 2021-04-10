@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prestashop
+  namespace: prestashop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prestashop
+  template:
+    metadata:
+      labels:
+        app: prestashop
+    spec:
+      nodeSelector:
+        app: master
+      containers:
+        - image: bitnami/prestashop:1.7
+          name: prestashop
+          env:
+            - name: MARIADB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: prestashop-config
+                  key: mariadb_host
+            - name: PRESTASHOP_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: prestashop-config
+                  key: prestashop_database_name
+            - name: PRESTASHOP_DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: prestashop-config
+                  key: prestashop_database_user
+            - name: ALLOW_EMPTY_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: prestashop-config
+                  key: allow_empty_password
+            - name: PRESTASHOP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: prestashop-config
+                  key: prestashop_host
+            - name: APACHE_HTTP_PORT_NUMBER
+              valueFrom:
+                configMapKeyRef:
+                  name: prestashop-config
+                  key: prestashop_apache_port_number
+
+          volumeMounts:
+            - name: prestashop-volume
+              mountPath: /tmp/prestashop
+      volumes:
+        - name: prestashop-volume
+          persistentVolumeClaim:
+            claimName: prestashop-pvc
+
+
